@@ -1,0 +1,76 @@
+﻿<adonisControls:AdonisWindow
+    x:Class="Eva.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:adonisUi="clr-namespace:AdonisUI;assembly=AdonisUI"
+    xmlns:adonisControls="clr-namespace:AdonisUI.Controls;assembly=AdonisUI"
+    xmlns:adonisExtensions="clr-namespace:AdonisUI.Extensions;assembly=AdonisUI"
+    xmlns:local="clr-namespace:Eva"
+    mc:Ignorable="d"
+    Height="700"
+    Width="1100"
+    MinHeight="700"
+    MinWidth="1100"
+    Title="Eva"
+    Background="#2A2B34"
+    WindowStartupLocation="CenterScreen"
+    Icon="/Assets/icon.png">
+
+    <Grid Margin="5,5,5,5">
+        <TabControl Background="#282C34" x:Name="Menu">
+            <TabItem Header="Scan">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Label Content="Welcome in Eva" FontSize="30" Margin="0,-150,0,0" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="Host" Width="500" TextAlignment="Center"/>
+                    <Button x:Name="RunButton" Content="Run" Width="75" Click="ClickRun" Margin="0,10,0,0"/>
+
+                    <TextBlock x:Name="Logs" Text="waiting" TextAlignment="Center" Margin="0,100,0,0"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Informations">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock x:Name="ExtractedLinks" Text="Extracted links: 0" FontWeight="Bold"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Links">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="24"/>
+                    </Grid.RowDefinitions>
+                    
+                    <ScrollViewer Grid.Row="0" CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
+                        <RichTextBox x:Name="Links" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
+                    </ScrollViewer>
+                    <Button Grid.Row="1" x:Name="SaveButton" Width="125" Content="Save links" Click="ClickSave"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Tags Hierarchy">
+                <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
+                    <RichTextBox x:Name="Tags" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Details">
+                <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0" >
+                    <RichTextBox x:Name="Details" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Restricted">
+                <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
+                    <RichTextBox x:Name="NotFound" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="About">
+                <StackPanel VerticalAlignment="Center">
+                    <Label Content="Author: Neo" HorizontalAlignment="Center"/>
+                    <Label Content="Version: 1.0.0" HorizontalAlignment="Center"/>
+                    <Label Content="The goal of EVA is to avoid time wasting while making checklists" HorizontalAlignment="Center"/>
+
+                    <Image Source="/Assets/icon.png" Stretch="UniformToFill" Height="150" Width="150" Margin="0,100,0,0"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</adonisControls:AdonisWindow>
