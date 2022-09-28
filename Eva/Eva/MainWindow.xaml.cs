@@ -35,6 +35,8 @@ namespace Eva
         private Dictionary<string, List<string>> HierarchyResult { get; set; }
         private List<string> links { get; set; }
         private List<string> analyzed { get; set; }
+        private UInt32 errors { get; set; }
+        private UInt32 total_steps { get; set; }
 
         public MainWindow()
         {
@@ -48,10 +50,13 @@ namespace Eva
             HierarchyResult = new Dictionary<string, List<string>>();
             links = new List<string>();
             analyzed = new List<string>();
+
+            total_steps = 2;
         }
 
         private void Add404(string url)
         {
+            errors++;
             NotFound.Document.Blocks.Add(new Paragraph(new Run(url)));
         }
 
@@ -77,19 +82,6 @@ namespace Eva
                 Add404($"[ {ex.Message} ] :\n{url}");
                 return (null);
             }
-        }
-
-        private bool Validate(string url)
-        {
-            if (url != null && url != string.Empty)
-            {
-                if (url.StartsWith("http") == true)
-                {
-                    return (true);
-                }
-            }
-
-            return (false);
         }
 
         private List<string> Extractor(string content)
@@ -148,22 +140,47 @@ namespace Eva
                 if (block.Count() > 0)
                     block.Clear();
             }
+            errors = 0;
+            ProgressSteps.Value = 0;
+            ProgressAnalyzis.Value = 0;
+            FileAnalysis.Text = $"File Analysis: 0/{links.Count()}";
+            FileSteps.Text = $"Total Steps: 0/{total_steps}";
         }
 
         private async Task Core()
         {
+            UInt32 count = 0;
+            UInt32 step = 0;
+
             HierarchyResult.Clear();
             cleanner();
             Logs.Text = "Starting scan";
+            step++;
+            FileSteps.Text = $"Total Steps: {step}/{total_steps}";
+            ProgressSteps.Value = ((step * 100) / total_steps);
             await Recursive(Host.Text);
             await Display(Concat(links));
+            step++;
+            FileSteps.Text = $"Total Steps: {step}/{total_steps}";
+            ProgressSteps.Value = ((step * 100) / total_steps);
             foreach (string link in links)
             {
                 Logs.Text = $"Analysing {link}";
                 await Hierarchy(link);
+                count++;
+                FileAnalysis.Text = $"File Analysis: {count}/{links.Count()}";
+                ProgressAnalyzis.Value = ((count * 100) / links.Count());
             }
-            ExtractedLinks.Text = $"Extracted links: {links.Count()}";
+            Refresh();
             Logs.Text = "Done";
+            ProgressSteps.Value = 0;
+            ProgressAnalyzis.Value = 0;
+        }
+
+        private void Refresh()
+        {
+            ExtractedLinks.Text = $"Extracted links: {links.Count()}";
+            BrokenLinks.Text = $"Broken links: {errors}";
         }
 
         private async Task Recursive(string url)
@@ -174,6 +191,7 @@ namespace Eva
             if (analyzed.Contains(url) == false && analyzed.Contains($"{url}/") == false)
             {
                 analyzed.Add(url);
+                FileAnalysis.Text = $"File Analysis: 0/{links.Count()}";
                 result = await Request(url);
                 if (result != null)
                 {
@@ -181,6 +199,7 @@ namespace Eva
                     if (local != null)
                     {
                         AddAll(local);
+                        Refresh();
                         foreach (string link in local)
                         {
                             Logs.Text = $"Searching deep links {link}";

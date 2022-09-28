@@ -21,17 +21,22 @@
     <Grid Margin="5,5,5,5">
         <TabControl Background="#282C34" x:Name="Menu">
             <TabItem Header="Scan">
-                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <Label Content="Welcome in Eva" FontSize="30" Margin="0,-150,0,0" HorizontalAlignment="Center"/>
-                    <TextBox x:Name="Host" Width="500" TextAlignment="Center"/>
+                <StackPanel>
+                    <Label Content="Welcome in Eva" FontSize="30" Margin="0,150,0,0" HorizontalAlignment="Center"/>
+                    <TextBox x:Name="Host" Width="500" TextAlignment="Center" Margin="0,100,0,0"/>
                     <Button x:Name="RunButton" Content="Run" Width="75" Click="ClickRun" Margin="0,10,0,0"/>
 
                     <TextBlock x:Name="Logs" Text="waiting" TextAlignment="Center" Margin="0,100,0,0"/>
+                    <TextBlock x:Name="FileSteps" Text="Total Steps:" Margin="0,25,0,0" FontWeight="Bold"/>
+                    <ProgressBar x:Name="ProgressSteps" Value="0" Height="20" Margin="0,0,0,0"/>
+                    <TextBlock x:Name="FileAnalysis"  Text="File Analysis:" Margin="0,25,0,0" FontWeight="Bold"/>
+                    <ProgressBar x:Name="ProgressAnalyzis" Value="0" Height="20" Margin="0,0,0,0"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Informations">
                 <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock x:Name="ExtractedLinks" Text="Extracted links: 0" FontWeight="Bold"/>
+                    <TextBlock x:Name="BrokenLinks" Text="Broken links: 0" FontWeight="Bold" Foreground="Red"/>
                 </StackPanel>
             </TabItem>
             <TabItem Header="Links">
@@ -57,7 +62,7 @@
                     <RichTextBox x:Name="Details" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
                 </ScrollViewer>
             </TabItem>
-            <TabItem Header="Restricted">
+            <TabItem Header="Errors">
                 <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
                     <RichTextBox x:Name="NotFound" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
                 </ScrollViewer>
