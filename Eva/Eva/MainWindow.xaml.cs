@@ -32,11 +32,12 @@ namespace Eva
     public partial class MainWindow : AdonisWindow
     {
         private Threads.Factory factory { get; set; }
-        private Dictionary<string, List<string>> HierarchyResult { get; set; }
         private List<string> links { get; set; }
         private List<string> analyzed { get; set; }
         private UInt32 errors { get; set; }
         private UInt32 total_steps { get; set; }
+        private UInt32 step = 0;
+        private UInt32 count = 0;
 
         public MainWindow()
         {
@@ -47,7 +48,6 @@ namespace Eva
         private void Initialize()
         {
             factory = new Threads.Factory();
-            HierarchyResult = new Dictionary<string, List<string>>();
             links = new List<string>();
             analyzed = new List<string>();
 
@@ -72,14 +72,14 @@ namespace Eva
                     {
                         Add404(url);
                     }
-
+                    
                     return (new StreamReader(response.GetResponseStream()).ReadToEnd());
                 }
                 return (null);
             } catch (WebException ex)
             {
                 Logs.Text = "Server returned an exception";
-                Add404($"[ {ex.Message} ] :\n{url}");
+                Add404($"[ {ex.Status.ToString()} ] : {url}");
                 return (null);
             }
         }
@@ -117,10 +117,7 @@ namespace Eva
         {
             string buffer = $"- {url}\n";
 
-            foreach (string tag in tags)
-            {
-                buffer += $"{tag}\n";
-            }
+            buffer += Concat(tags);
 
             return (buffer);
         }
@@ -141,23 +138,33 @@ namespace Eva
                     block.Clear();
             }
             errors = 0;
+            step = 0;
+            count = 0;
             ProgressSteps.Value = 0;
             ProgressAnalyzis.Value = 0;
             FileAnalysis.Text = $"File Analysis: 0/{links.Count()}";
             FileSteps.Text = $"Total Steps: 0/{total_steps}";
+            links.Clear();
+            analyzed.Clear();
+        }
+
+        private void Progress()
+        {
+            FileSteps.Text = $"Total Steps: {step}/{total_steps}";
+            ProgressSteps.Value = ((step * 100) / total_steps);
+            if (links.Count() > 0)
+            {
+                FileAnalysis.Text = $"File Analysis: {count}/{links.Count()}";
+                ProgressAnalyzis.Value = ((count * 100) / links.Count());
+            }
         }
 
         private async Task Core()
         {
-            UInt32 count = 0;
-            UInt32 step = 0;
-
-            HierarchyResult.Clear();
             cleanner();
             Logs.Text = "Starting scan";
             step++;
-            FileSteps.Text = $"Total Steps: {step}/{total_steps}";
-            ProgressSteps.Value = ((step * 100) / total_steps);
+            Progress();
             await Recursive(Host.Text);
             await Display(Concat(links));
             step++;
@@ -168,8 +175,7 @@ namespace Eva
                 Logs.Text = $"Analysing {link}";
                 await Hierarchy(link);
                 count++;
-                FileAnalysis.Text = $"File Analysis: {count}/{links.Count()}";
-                ProgressAnalyzis.Value = ((count * 100) / links.Count());
+                Progress();
             }
             Refresh();
             Logs.Text = "Done";
@@ -227,7 +233,6 @@ namespace Eva
             string[] lines = null;
             List<string> tags = null;
             List<string> full = null;
-            string copy = null;
             UInt32 taglimit = 5;
 
             if (content != null)
@@ -239,15 +244,13 @@ namespace Eva
                 {
                     foreach (string line in lines)
                     {
-                        copy = line.TrimStart(' ');
-                        copy = line.TrimStart('\t');
                         if (line.Contains("<h") == true)
                         {
                             for (UInt32 i = 1; i < taglimit; i++)
                             {
-                                if (copy.StartsWith($"<h{i}") == true)
+                                if (line.Contains($"<h{i}") == true)
                                 {
-                                    full.Add($"<h{i}>\n\t{copy}\n");
+                                    full.Add($"<h{i}>\n\t{line}\n");
                                     tags.Add($"<h{i}>");
                                 }
                             }
@@ -280,26 +283,45 @@ namespace Eva
         private async Task Save()
         {
             Logs.Text = "Saving links";
+            Uri uri = new Uri(Host.Text);
+            string path = $"Links/{uri.Host}/save_{DateTime.Now.ToString("ddMMyyyy_hhmmss")}.txt";
+
             if (Directory.Exists("Links") == false)
             {
                 Directory.CreateDirectory("Links");
             }
-            File.WriteAllLines($"Links/{DateTime.Now.ToString("ddMMyyyy-hhmmss")}.txt", links);
-            Logs.Text = "Links saved";
+            if (Directory.Exists($"Links/{uri.Host}") == false)
+            {
+                Directory.CreateDirectory($"Links/{uri.Host}");
+            }
+            File.WriteAllLines(path, links);
+            Logs.Text = $"Links saved in: {path}";
         }
 
         private async void ClickRun(object sender, RoutedEventArgs e)
         {
             RunButton.IsEnabled = false;
-            await Core();
+            Host.IsReadOnly = true;
+            if ((Uri.IsWellFormedUriString(Host.Text, UriKind.Absolute) == true))
+            {
+                await Core();
+            } else
+            {
+                MessageBox.Show($"Uri '{Host.Text}' is not well formated as expected, the format must be 'http(s)://<host>.<domain>'");
+            }
+            Host.IsReadOnly = false;
             RunButton.IsEnabled = true;
         }
 
         private async void ClickSave(object sender, RoutedEventArgs e)
         {
             SaveButton.IsEnabled = false;
+            RunButton.IsEnabled = false;
+            Host.IsReadOnly = true;
             await Save();
             SaveButton.IsEnabled = true;
+            Host.IsReadOnly = false;
+            RunButton.IsEnabled = true;
         }
     }
 }

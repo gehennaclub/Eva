@@ -22,7 +22,8 @@
         <TabControl Background="#282C34" x:Name="Menu">
             <TabItem Header="Scan">
                 <StackPanel>
-                    <Label Content="Welcome in Eva" FontSize="30" Margin="0,150,0,0" HorizontalAlignment="Center"/>
+                    <Label Content="Eva" FontSize="30" Margin="0,120,0,0" HorizontalAlignment="Center"/>
+                    <Label Content="Entity for Various Automations" FontSize="12" Margin="0,0,0,0" HorizontalAlignment="Center" FontWeight="Normal"/>
                     <TextBox x:Name="Host" Width="500" TextAlignment="Center" Margin="0,100,0,0"/>
                     <Button x:Name="RunButton" Content="Run" Width="75" Click="ClickRun" Margin="0,10,0,0"/>
 
@@ -70,8 +71,8 @@
             <TabItem Header="About">
                 <StackPanel VerticalAlignment="Center">
                     <Label Content="Author: Neo" HorizontalAlignment="Center"/>
-                    <Label Content="Version: 1.0.0" HorizontalAlignment="Center"/>
-                    <Label Content="The goal of EVA is to avoid time wasting while making checklists" HorizontalAlignment="Center"/>
+                    <Label Content="Version: 1.0.2" HorizontalAlignment="Center"/>
+                    <Label Content="The goal of EVA is to avoid time wasting while making checklists" HorizontalAlignment="Center" FontWeight="Normal"/>
 
                     <Image Source="/Assets/icon.png" Stretch="UniformToFill" Height="150" Width="150" Margin="0,100,0,0"/>
                 </StackPanel>
