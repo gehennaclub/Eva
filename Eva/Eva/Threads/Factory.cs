@@ -9,9 +9,17 @@ namespace Eva.Threads
 {
     public class Factory
     {
+        private List<Action> jobs { get; set; }
+
+        public Factory()
+        {
+            this.jobs = new List<Action>();
+        }
+
         public async Task Run(Action action)
         {
-            await Task.Run(() => Invoker(action));
+            jobs.Add(action);
+            await Queuer();
         }
 
         private void Invoker(Action action)
@@ -20,6 +28,16 @@ namespace Eva.Threads
             {
                 action();
             });
+        }
+
+        public async Task Queuer()
+        {
+            foreach (Action job in jobs)
+            {
+                await Task.Run(() => Invoker(job));
+            }
+
+            jobs.Clear();
         }
     }
 }

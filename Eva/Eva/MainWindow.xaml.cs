@@ -23,6 +23,7 @@ using System.Threading;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Security.Policy;
+using Microsoft.Win32;
 
 namespace Eva
 {
@@ -36,6 +37,7 @@ namespace Eva
         private List<string> analyzed { get; set; }
         private UInt32 errors { get; set; }
         private UInt32 total_steps { get; set; }
+        private Ookii.Dialogs.Wpf.VistaOpenFileDialog fileDialog { get; set; }
         private UInt32 step = 0;
         private UInt32 count = 0;
 
@@ -50,6 +52,7 @@ namespace Eva
             factory = new Threads.Factory();
             links = new List<string>();
             analyzed = new List<string>();
+            fileDialog = new Ookii.Dialogs.Wpf.VistaOpenFileDialog();
 
             total_steps = 2;
         }
@@ -148,7 +151,7 @@ namespace Eva
             analyzed.Clear();
         }
 
-        private void Progress()
+        private void _Progress()
         {
             FileSteps.Text = $"Total Steps: {step}/{total_steps}";
             ProgressSteps.Value = ((step * 100) / total_steps);
@@ -159,34 +162,83 @@ namespace Eva
             }
         }
 
+        private async Task Progress()
+        {
+            await factory.Run(_Progress);
+        }
+
         private async Task Core()
         {
             cleanner();
             Logs.Text = "Starting scan";
-            step++;
-            Progress();
+
+            await Search();
+            await Analyse();
+
+            await Refresh();
+            Logs.Text = "Done";
+        }
+
+        private async Task Search()
+        {
+            step = 1;
+
+            await Progress();
             await Recursive(Host.Text);
             await Display(Concat(links));
-            step++;
-            FileSteps.Text = $"Total Steps: {step}/{total_steps}";
-            ProgressSteps.Value = ((step * 100) / total_steps);
+
+            Logs.Text = "Done";
+        }
+
+        private async Task Analyse()
+        {
+            step = 2;
+
+            await Progress();
+            await Display(Concat(links));
             foreach (string link in links)
             {
                 Logs.Text = $"Analysing {link}";
                 await Hierarchy(link);
                 count++;
-                Progress();
+                await Progress();
+                await Refresh();
             }
-            Refresh();
+
             Logs.Text = "Done";
             ProgressSteps.Value = 0;
             ProgressAnalyzis.Value = 0;
+            Locker();
         }
 
-        private void Refresh()
+        private void _Restore()
+        {
+            Logs.Text = "Restoring session links";
+            links = File.ReadAllLines(fileDialog.FileName).ToList();
+            Logs.Text = $"{links.Count()} links restored";
+        }
+
+        private async Task Restore()
+        {
+            await factory.Run(_Restore);
+        }
+
+        private void _Refresh()
         {
             ExtractedLinks.Text = $"Extracted links: {links.Count()}";
             BrokenLinks.Text = $"Broken links: {errors}";
+        }
+
+        private async Task Refresh()
+        {
+            await factory.Run(_Refresh);
+        }
+
+        private void Locker()
+        {
+            RunButton.IsEnabled = !RunButton.IsEnabled;
+            AnalyseButton.IsEnabled = !AnalyseButton.IsEnabled;
+            Host.IsReadOnly = !Host.IsReadOnly;
         }
 
         private async Task Recursive(string url)
@@ -197,7 +249,8 @@ namespace Eva
             if (analyzed.Contains(url) == false && analyzed.Contains($"{url}/") == false)
             {
                 analyzed.Add(url);
-                FileAnalysis.Text = $"File Analysis: 0/{links.Count()}";
+                Logs.Text = $"Searching deep links {url}";
+                await Progress();
                 result = await Request(url);
                 if (result != null)
                 {
@@ -205,10 +258,9 @@ namespace Eva
                     if (local != null)
                     {
                         AddAll(local);
-                        Refresh();
+                        await Refresh();
                         foreach (string link in local)
                         {
-                            Logs.Text = $"Searching deep links {link}";
                             await Recursive(link);
                         }
                     }
@@ -280,7 +332,7 @@ namespace Eva
             Details.Document.Blocks.Add(new Paragraph(new Run(content)));
         }
 
-        private async Task Save()
+        private void _Save()
         {
             Logs.Text = "Saving links";
             Uri uri = new Uri(Host.Text);
@@ -298,10 +350,14 @@ namespace Eva
             Logs.Text = $"Links saved in: {path}";
         }
 
+        private async Task Save()
+        {
+            await factory.Run(_Save);
+        }
+
         private async void ClickRun(object sender, RoutedEventArgs e)
         {
-            RunButton.IsEnabled = false;
-            Host.IsReadOnly = true;
+            Locker();
             if ((Uri.IsWellFormedUriString(Host.Text, UriKind.Absolute) == true))
             {
                 await Core();
@@ -309,8 +365,22 @@ namespace Eva
             {
                 MessageBox.Show($"Uri '{Host.Text}' is not well formated as expected, the format must be 'http(s)://<host>.<domain>'");
             }
-            Host.IsReadOnly = false;
-            RunButton.IsEnabled = true;
+            Locker();
+        }
+
+        private async void ClickAnalyse(object sender, RoutedEventArgs e)
+        {
+            Locker();
+
+            if (fileDialog.ShowDialog() == true)
+            {
+                if (fileDialog.FileName != String.Empty)
+                {
+                    cleanner();
+                    await Restore();
+                    await Analyse();
+                }
+            }
         }
 
         private async void ClickSave(object sender, RoutedEventArgs e)
