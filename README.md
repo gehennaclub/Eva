@@ -1,5 +1,5 @@
 <p align = "center">
-    <img src="https://raw.githubusercontent.com/gehennaclub/Eva/main/Assets/logo.png">
+    <img src="https://raw.githubusercontent.com/gehennaclub/Eva/main/Assets/icon.png">
 </p>
 
 <p align = "center">
