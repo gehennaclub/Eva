@@ -40,6 +40,7 @@ namespace Eva
         private Ookii.Dialogs.Wpf.VistaOpenFileDialog fileDialog { get; set; }
         private UInt32 step = 0;
         private UInt32 count = 0;
+        private Random random = new Random();
 
         public MainWindow()
         {
@@ -234,11 +235,29 @@ namespace Eva
             await factory.Run(_Refresh);
         }
 
+        private void _Link()
+        {
+            string full = Host.Text;
+
+            if (full.EndsWith("/") == false)
+            {
+                full += "/";
+            }
+            full += "wp-admin/theme-editor.php?file=header.php&theme=Divi";
+
+            HeaderBlock.Text = full;
+        }
+
+        private async Task Link()
+        {
+            await factory.Run(_Link);
+        }
+
         private void Locker()
         {
             RunButton.IsEnabled = !RunButton.IsEnabled;
-            AnalyseButton.IsEnabled = !AnalyseButton.IsEnabled;
             Host.IsReadOnly = !Host.IsReadOnly;
+            HeaderButton.IsEnabled = !HeaderButton.IsEnabled;
         }
 
         private async Task Recursive(string url)
@@ -360,27 +379,13 @@ namespace Eva
             Locker();
             if ((Uri.IsWellFormedUriString(Host.Text, UriKind.Absolute) == true))
             {
+                await Link();
                 await Core();
             } else
             {
                 MessageBox.Show($"Uri '{Host.Text}' is not well formated as expected, the format must be 'http(s)://<host>.<domain>'");
             }
             Locker();
-        }
-
-        private async void ClickAnalyse(object sender, RoutedEventArgs e)
-        {
-            Locker();
-
-            if (fileDialog.ShowDialog() == true)
-            {
-                if (fileDialog.FileName != String.Empty)
-                {
-                    cleanner();
-                    await Restore();
-                    await Analyse();
-                }
-            }
         }
 
         private async void ClickSave(object sender, RoutedEventArgs e)
@@ -392,6 +397,60 @@ namespace Eva
             SaveButton.IsEnabled = true;
             Host.IsReadOnly = false;
             RunButton.IsEnabled = true;
+        }
+
+        private void HeaderButton_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(HeaderBlock.Text);
+        }
+
+        private void Generate()
+        {
+            string password = "";
+            List<Func<char>> fun = new List<Func<char>>()
+            {
+                Number,
+                Letter,
+            };
+
+            for (int i = 0; i < Range.Value; i++)
+            {
+                password += fun[random.Next(0, fun.Count())]();
+            }
+            password += Special();
+            Password.Text = password;
+        }
+
+        private char Number()
+        {
+            return ((char)random.Next(48, 58));
+        }
+
+        private char Letter()
+        {
+            if (random.Next(0, 2) == 0)
+            {
+                return ((char)random.Next(65, 91));
+            }
+            return ((char)random.Next(97, 123));
+        }
+
+        private char Special()
+        {
+            char[] items = { '*', '+', '!' };
+
+            return (items[random.Next(0, items.Length)]);
+        }
+
+        private async void GeneratePasswordEvent(object sender, RoutedEventArgs e)
+        {
+            await factory.Run(Generate);
+        }
+
+        private void UpdateRange(object sender, RoutedEventArgs e)
+        {
+            if (Range != null && PasswordSize != null)
+                PasswordSize.Text = $"{Math.Round(Range.Value, 0)}";
         }
     }
 }

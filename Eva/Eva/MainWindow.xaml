@@ -25,10 +25,7 @@
                     <Label Content="Eva" FontSize="30" Margin="0,120,0,0" HorizontalAlignment="Center"/>
                     <Label Content="Entity for Various Automations" FontSize="12" Margin="0,0,0,0" HorizontalAlignment="Center" FontWeight="Normal"/>
                     <TextBox x:Name="Host" Width="500" TextAlignment="Center" Margin="0,100,0,0"/>
-                    <Grid Height="24">
-                        <Button x:Name="RunButton" Content="Search" Width="75" Click="ClickRun" Margin="-100,0,0,0"/>
-                        <Button x:Name="AnalyseButton" Content="Browse" Width="75" Click="ClickAnalyse" Margin="100,0,0,0"/>
-                    </Grid>
+                    <Button x:Name="RunButton" Content="Search" Width="75" Click="ClickRun" Margin="0,0,0,0"/>
 
                     <TextBlock x:Name="Logs" Text="waiting" TextAlignment="Center" Margin="0,100,0,0"/>
                     <TextBlock x:Name="FileSteps" Text="Total Steps:" Margin="0,25,0,0" FontWeight="Bold"/>
@@ -70,6 +67,20 @@
                 <ScrollViewer CanContentScroll="True" VerticalScrollBarVisibility="Auto" Margin="0,0,0,0">
                     <RichTextBox x:Name="NotFound" Background="#282C34" Foreground="White" IsReadOnly="True" BorderBrush="Transparent"/>
                 </ScrollViewer>
+            </TabItem>
+            <TabItem Header="Header">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="HeaderBlock" Text="Unknown"/>
+                    <Button x:Name="HeaderButton" Content="Copy" Width="75" Click="HeaderButton_Click"/>
+                </StackPanel>
+            </TabItem>
+            <TabItem Header="Password">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <Slider Minimum="9" Maximum="25"  x:Name="Range" SmallChange="1" LargeChange="10" ValueChanged="UpdateRange"/>
+                    <TextBlock x:Name="PasswordSize" Margin="0,10,0,0" Width="500" TextAlignment="Center"/>
+                    <TextBox x:Name="Password" Margin="0,10,0,0" Width="500" TextAlignment="Center"/>
+                    <Button x:Name="GeneratePassword" Margin="0,10,0,0" Content="Generate" Width="75" Click="GeneratePasswordEvent"/>
+                </StackPanel>
             </TabItem>
             <TabItem Header="About">
                 <StackPanel VerticalAlignment="Center">
